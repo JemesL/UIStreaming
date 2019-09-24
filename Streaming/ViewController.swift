@@ -21,25 +21,20 @@ class ViewController: UIViewController {
     func test() {
         let v = UIView()
         view.addSubview(v)
-        v.backgroundColor = .white
-        v.snp.makeConstraints { make in
-            make.top.equalTo(0)
-            make.left.equalTo(0)
-            make.right.equalTo(0)
-            make.bottom.equalTo(0)
-        }
-        
-        UIView().adhere(toSuperView: view).config { view in
-            view.backgroundColor = .white
-        }.layout { make in
-            make.top.equalTo(0)
-            make.left.equalTo(0)
-            make.right.equalTo(0)
-            make.bottom.equalTo(0)
-        }
+        v.backgroundColor = .green
+        let left = 20
+        let right = 40
+        let hMargin = 10
+        let offset =  (left + right + 2 * hMargin)/3
         
         v.snp.makeConstraints { make in
-            make.top.equalTo(0)
+//            make.top.equalTo(0)
+//            make.left.equalTo(0)
+//            make.right.equalTo(0)
+//            make.bottom.equalTo(0)
+            make.center.equalTo(view)
+            make.width.equalToSuperview().offset(-offset).dividedBy(3)
+            make.height.equalTo(20)
         }
     }
     
@@ -69,20 +64,15 @@ class ViewController: UIViewController {
             
 //            make.height.equalTo(500)
 //            make.top.equalTo(50)
-//            make.width.equalTo(300)
+            make.width.equalTo(200)
 //            make.height.equalTo(200)
             make.center.equalToSuperview()
         }
-        
-//        bg.jl.streaming(subs: subs).horizontal.isFillHor.isFillVer.hasHeight.hasWidth.hMargin(-15).maskConstraints()
-        
-//        bg.jl.streaming(subs: subs).vertical.isFillVer.isFillHor.height(80).rightPadding(20).maskConstraints()
-        
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        bg?.jl.streaming(subs: subs).horizontalMulWithCount(3).hasWidth.isFillVer.isFillHor.height(90).bottomPadding(10).hMargin(3).vMargin(5).padding(UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)).maskConstraints()
+        bg?.jl.streaming(subs: subs).horizontalMulWithCount(3).equalWidth.isFillVer.isFillHor.height(90).bottomPadding(10).hMargin(3).vMargin(5).padding(UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)).maskConstraints()
     }
 
 

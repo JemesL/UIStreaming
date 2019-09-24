@@ -30,6 +30,8 @@ fileprivate struct UIStreamingConfig {
     // 是否换行
     var isMul: Bool = false
     var lineCount: Int?
+    // 等分
+//    var dividedCount: Int?
     var isEqualWidth: Bool = false
     var isEqualHeight: Bool = false
     var hMargin: CGFloat = 0
@@ -84,6 +86,13 @@ class UIStreaming {
         }
         return self
     }
+    
+//    func dividedBy(_ v: Int) -> UIStreaming {
+//        if v > 0 {
+//            self.config.dividedCount = v
+//        }
+//        return self
+//    }
     
     var equalWidth: UIStreaming {
         get {
@@ -187,10 +196,10 @@ class UIStreaming {
             makeVerticalConstraints()
             return
         }
-//        if direction == .horizontal && config.isMul && config.lineCount != nil {
-//            makeMulLineWithCountHorizontalConstraints()
-//            return
-//        }
+        if direction == .horizontal && config.isMul && config.lineCount != nil {
+            makeMulLineWithCountHorizontalConstraints()
+            return
+        }
         if direction == .horizontal && config.isMul {
             makeMulLineHorizontalConstraints()
             return
@@ -331,7 +340,7 @@ extension UIStreaming {
     
     // 水平换行并且可以限制个数(基本就是等宽的 不支持 haswidth属性)
     // 父视图有宽度 则等分
-    // 父视图没有宽度, 则通过width()来设置(等宽)
+    // 父视图没有宽度, 则通过width()来设置(等宽) 再设置 isFillHor
     private func makeMulLineWithCountHorizontalConstraints() {
         guard let superView = superView else { return }
         var lastLine = superView
@@ -345,23 +354,17 @@ extension UIStreaming {
             superView.addSubview(view)
             view.snp.remakeConstraints { (make) in
                 // 列数
-                let col: CGFloat = CGFloat(index % lineCount)
+                let col: Int = index % lineCount
                 if index < lineCount {
-                    make.top.equalTo(0)
+                    make.top.equalTo(config.padding.top)
                 } else {
                     make.top.equalTo(lastLine.snp.bottom).offset(config.vMargin)
                 }
                 
 
-                // 等宽 且后面的元素宽度等于第一个
-                if config.isEqualWidth {
-                    if count < lineCount {
-                        let rate = 1.0 / Double(lineCount)
-                        let offset = config.hMargin * CGFloat(lineCount - 1) * -1.0 * CGFloat(rate)
-                        make.width.equalTo(superView).offset(offset).multipliedBy(rate)
-                    } else if index > 0{
-                        make.width.equalTo(firstView.snp.width)
-                    }
+                if config.isEqualWidth {// 等分
+                    let widthOffset: CGFloat = (config.padding.left + config.padding.right + 2 * config.hMargin) / CGFloat(lineCount)
+                    make.width.equalToSuperview().dividedBy(lineCount).offset(-widthOffset)
                 } else {
                     make.width.equalTo(getCurViewWidth(v: view))
                 }
@@ -369,21 +372,21 @@ extension UIStreaming {
                 make.height.equalTo(getCurViewHeight(v: view))
                 
                 if col == 0 {
-                    make.left.equalTo(0)
+                    make.left.equalTo(config.padding.left)
                 } else {
                     let leftView = subs[index - 1]
                     make.left.equalTo(leftView.snp.right).offset(config.hMargin)
                 }
                 
-                let isLastCol = Int(col) == (lineCount - 1)
-                if config.isEqualWidth && isLastCol {
-                    make.right.equalTo(0)
+                let isLastCol = col == (lineCount - 1)
+                if config.isFillHor && isLastCol {
+                    make.right.equalTo(-config.padding.right)
                 }
 
                 if index == count - 1 {
-                    make.bottom.equalTo(0)
+                    make.bottom.equalTo(-config.padding.bottom)
                 }
-                Int(col) == lineCount - 1 ? lastLine = view : nil
+                col == lineCount - 1 ? lastLine = view : nil
             }
         }
     }
